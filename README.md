@@ -60,126 +60,100 @@ Criar um sistema realista e completo que permita praticar:
 ---
 
 🔍 Detalhes por serviço
-1. vehicle-telemetry-mock
-Função: Gera dados simulados de veículos e envia para Kafka.
+1. Vehicle-Service
+Responsável pelo cadastro e gestão dos veículos monitorados.
 
-Gera dados para 10 veículos
+Tecnologias:
 
-Frequência: configurável (ex: 1 evento por segundo por veículo)
+Quarkus (REST, Hibernate ORM, PostgreSQL)
 
-Publica no tópico Kafka: vehicle.telemetry.raw
+PostgreSQL (armazenamento principal)
 
-Leve, stateless
+Requisitos:
 
-Tecnologias: Java com Quarkus, SmallRye Kafka (producer)
+Criar, listar, atualizar e remover veículos.
 
-2. telemetry-ingestion
-Função: Recebe os dados do Kafka e armazena no MongoDB (sem transformação).
+Cada veículo possui: id, placa, marca, modelo, ano, status (ativo/inativo), dataCadastro.
 
-Consumidor Kafka do tópico vehicle.telemetry.raw
+Endpoint REST para buscar veículo por placa ou ID.
 
-Insere os documentos como vieram no MongoDB (coleção raw_telemetry)
+Publicar evento no Kafka ao criar/atualizar um veículo (vehicle-created, vehicle-updated).
 
-Opcional: pode validar esquema JSON
+2. Telemetry-Ingest-Service
+Responsável por receber os dados de telemetria (mockados ou de dispositivos reais).
 
-Tecnologias: Quarkus, Kafka (consumer), MongoDB, Panache
+Tecnologias:
 
-3. telemetry-processor
-Função: Processa os dados recebidos (ex: calcula média, detecta anomalias) e envia para PostgreSQL ou outro tópico Kafka.
+Quarkus (Kafka Reactive Client)
 
-Consome vehicle.telemetry.raw
+MongoDB (armazenamento de eventos de telemetria)
 
-Aplica lógica de negócio:
+Kafka (entrada de dados)
 
-Detecta velocidade > 120km/h
+Requisitos:
 
-Motor > 100°C
+Consumir dados do tópico Kafka vehicle-telemetry.
 
-Envia para:
+Persistir os dados brutos de telemetria no MongoDB com timestamp.
 
-PostgreSQL (processed_telemetry)
+Validar formato e ignorar mensagens inválidas.
 
-Kafka (vehicle.telemetry.alert)
+Estrutura de telemetria:
 
-Tecnologias: Kafka, PostgreSQL, Quarkus com JPA/Hibernate
+{
+  "vehicleId": "uuid",
+  "timestamp": "ISO8601",
+  "location": {"lat": -23.5, "lon": -46.6},
+  "speed": 78.5,
+  "fuelLevel": 52.3,
+  "rpm": 3200
+}
 
-4. alert-service
-Função: Recebe eventos de alerta e gerencia status de alertas por veículo.
+3. Telemetry-Analytics-Service
+Responsável por processar dados e gerar informações úteis (distância, consumo, etc).
 
-Kafka consumer do tópico vehicle.telemetry.alert
+Tecnologias:
 
-Armazena no PostgreSQL (alerts)
+Quarkus (Scheduler, Kafka, MongoDB, REST)
 
-Pode expor endpoints REST para:
+Kafka (entrada/saída de dados processados)
 
-Listar alertas ativos
+Requisitos:
 
-Resolver alertas
+Rodar periodicamente (ex: a cada 5 minutos) para processar dados do MongoDB.
 
-Histórico de alertas
+Calcular métricas por veículo, como:
 
-Tecnologias: Quarkus, PostgreSQL
+Distância percorrida.
 
-5. report-api
-Função: API REST para o frontend ou sistemas terceiros consumirem relatórios.
+Velocidade média.
 
-Filtros por veículo, período, tipo de dado
+Consumo médio estimado.
 
-Dados de:
+Publicar resultado em tópico Kafka vehicle-analytics.
 
-MongoDB (raw_telemetry)
+Expor endpoint REST para consultar métricas agregadas de um veículo (via Mongo ou cache).
 
-PostgreSQL (processed_telemetry, alerts)
+4. Report-Service
+Responsável por gerar relatórios sob demanda ou por agendamento.
 
-Pode ter paginação e agregações simples
+Tecnologias:
 
-Tecnologias: Quarkus, RESTEasy, MongoDB, PostgreSQL
+Quarkus (REST, Kafka, PostgreSQL)
 
-6. gateway 
-Função: API Gateway para entrada única para o frontend.
+Kafka (consumidor de vehicle-analytics)
 
-Redireciona /api/reports, /api/alerts, etc.
+Requisitos:
 
-Pode fazer autenticação
+Consumir métricas do Kafka e armazenar no PostgreSQL (métricas históricas).
 
-Controla CORS e versionamento
+Expor REST para:
 
-Tecnologias: Traefik, NGINX, ou um microserviço Quarkus REST
+Buscar relatórios por veículo e intervalo de tempo.
 
-7. dashboard-ui 
-Função: UI web em React para mostrar:
+Exportar relatório em JSON.
 
-Mapa com posição dos veículos
-
-Tabela de dados em tempo real
-
-Lista de alertas
-
-Filtros por veículo ou data
-
-Tecnologias: React.js, Chart.js ou Recharts, REST, WebSocket 
-
-8. telemetry-metrics
-Função: Expõe métricas Prometheus como:
-
-Eventos processados por minuto
-
-Latência média
-
-Número de veículos ativos
-
-Alertas disparados
-
-Tecnologias: Quarkus com Micrometer, Prometheus
-
-9. auth-service 
-Função: Gerenciar autenticação de usuários para acessar a API.
-
-JWT (JSON Web Token)
-
-Ou Keycloak com OAuth2
-
-Integrável com o gateway
+Pode ser estendido para envio por e-mail em background (extra).
 
 ---
 📥 Fluxo de Dados
