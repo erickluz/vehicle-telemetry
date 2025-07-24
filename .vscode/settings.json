@@ -1,0 +1,9 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "maven.terminal.favorites": [
+        {
+            "command": "quarkus:dev",
+            "debug": false
+        }
+    ]
+}
