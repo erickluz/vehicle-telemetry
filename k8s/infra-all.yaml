@@ -214,3 +214,38 @@ spec:
       targetPort: 9000
       nodePort: 30090
   type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicle-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vehicle-service
+  template:
+    metadata:
+      labels:
+        app: vehicle-service
+    spec:
+      containers:
+        - name: vehicle-service
+          image: quarkus/vehicle-service:latest  # Nome da imagem Docker
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080  # Porta que o container escuta
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehicle-service
+spec:
+  selector:
+    app: vehicle-service  # Match com os pods do deployment (label "app")
+  type: NodePort  # Expõe a aplicação externamente via porta do nó (ideal para Minikube)
+  ports:
+    - protocol: TCP
+      port: 80         # Porta exposta pelo service (externa)
+      targetPort: 8080 # Porta que o container escuta
+      nodePort: 30001  # Porta fixa que o Minikube usará no host (entre 30000-32767)
