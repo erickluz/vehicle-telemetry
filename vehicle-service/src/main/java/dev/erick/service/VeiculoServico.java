@@ -24,6 +24,7 @@ public class VeiculoServico {
         return veiculoRepository.findByPlaca(placa);
     }
 
+    @Transactional
     public void salvarVeiculo(VeiculoDTO veiculoDTO) {
         veiculoRepository.persist(veiculoDTO.fromVeiculoDTO());
     }
@@ -40,7 +41,7 @@ public class VeiculoServico {
     public void desativarVeiculo(String id) {
         Veiculo veiculo = veiculoRepository.findById(Long.valueOf(id));
         veiculo.setStatus(Status.INATIVO);
-        veiculoRepository.persist(veiculo);
+        // como a entidade está gerenciada, apenas alterar o status dentro de @Transactional é suficiente
     }
 
 }

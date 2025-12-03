@@ -5,9 +5,9 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class VeiculoRepository implements PanacheRepositoryBase<Veiculo, Long>{
+public class VeiculoRepository implements PanacheRepositoryBase<Veiculo, Long> {
 
     public Veiculo findByPlaca(String placa) {
-        return findByPlaca(placa);
+        return find("placa", placa).firstResult();
     }
 }
