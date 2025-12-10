@@ -1,5 +1,6 @@
 package dev.erick.json;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import dev.erick.domain.Status;
@@ -30,8 +31,8 @@ public class VeiculoDTO {
         this.marca = veiculo.getMarca();
         this.modelo = veiculo.getModelo();
         this.ano = veiculo.getAno();
-        this.status = veiculo.getStatus().toString();
-        this.dataCadastro = veiculo.getDataCadastro().format(DateTimeFormatter.ISO_DATE_TIME);
+        this.status = (veiculo.getStatus() != null) ? veiculo.getStatus().toString() : null;
+        this.dataCadastro = (veiculo.getDataCadastro() != null) ? veiculo.getDataCadastro().format(DateTimeFormatter.ISO_DATE_TIME) : null;
     }
 
     public Veiculo fromVeiculoDTO() {
@@ -41,7 +42,12 @@ public class VeiculoDTO {
         veiculo.setMarca(marca);
         veiculo.setModelo(modelo);
         veiculo.setAno(ano);
-        veiculo.setStatus(Status.fromString(this.status));
+        if (this.status != null) {
+            veiculo.setStatus(Status.fromString(this.status));
+        }
+        if (this.dataCadastro != null) {
+            veiculo.setDataCadastro(LocalDateTime.parse(this.dataCadastro, DateTimeFormatter.ISO_DATE_TIME));
+        }
         return veiculo;
     }
 

@@ -1,5 +1,7 @@
 package dev.erick.service;
 
+import java.time.LocalDateTime;
+
 import dev.erick.domain.Status;
 import dev.erick.domain.Veiculo;
 import dev.erick.json.VeiculoDTO;
@@ -33,6 +35,7 @@ public class VeiculoServico {
     public Veiculo cadastrarVeiculo(VeiculoDTO veiculoDTO) {
         Veiculo veiculo = veiculoDTO.fromVeiculoDTO();
         veiculo.setStatus(Status.ATIVO);
+        veiculo.setDataCadastro(LocalDateTime.now());
         veiculoRepository.persistAndFlush(veiculo);
         return veiculoRepository.findById(veiculo.getId());
     }
